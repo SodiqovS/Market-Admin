@@ -86,13 +86,6 @@ function ProductDetail() {
                 >
                     Back to Products
                 </Button>
-                <Button 
-                    startIcon={<ShoppingCartIcon />} 
-                    onClick={() => navigate('/cart')}
-                    variant="contained"
-                >
-                    Go to Cart
-                </Button>
             </Box>
 
             {/* Mahsulot Rasmlarini Slaydi */}

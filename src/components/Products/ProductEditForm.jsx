@@ -8,10 +8,10 @@ import ApiService from '../../api';
 function ProductEditForm({ productId, onSave }) {
   const [productData, setProductData] = useState({
     name: '',
-    price: '',
-    quantity: '',
+    price: 0,
+    quantity: 0,
     description: '',
-    category_id: '',
+    category_id: 0,
   });
   const [categories, setCategories] = useState([]);
 

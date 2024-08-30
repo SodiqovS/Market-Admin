@@ -11,6 +11,11 @@ const PrivateRoute = ({ children }) => {
         return <Navigate to="/login" />;
     }
 
+    if (!user.is_admin) {
+        // Redirect to a page that informs the user they are not an admin
+        return <Navigate to="/not-authorized" />;
+    }
+
     return children;
 };
 

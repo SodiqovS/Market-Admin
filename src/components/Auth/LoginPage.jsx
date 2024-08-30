@@ -20,7 +20,7 @@ const LoginPage = () => {
       login({ ...user, access_token, refresh_token });
 
       // Redirect to the dashboard
-      navigate('/dashboard');
+      navigate('/');
     } catch (error) {
       // Display error message
       setError(error.response?.data?.message || 'Login failed. Please try again.');

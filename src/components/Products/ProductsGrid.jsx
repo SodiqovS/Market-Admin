@@ -137,16 +137,15 @@ function ProductsGrid() {
                     <MenuItem value={5}>5</MenuItem>
                     <MenuItem value={10}>10</MenuItem>
                     <MenuItem value={20}>20</MenuItem>
-                    <MenuItem value={50}>50</MenuItem>
                 </Select>
                 <Button variant="contained" color="primary" onClick={handleOpen}>
                     Add Product
                 </Button>
             </div>
 
-            <Grid container spacing={3}>
+            <Grid container spacing={1}>
                 {products.map(product => (
-                    <Grid item xs={12} sm={6} md={4} lg={2.4} key={product.id}>
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
                         <ProductCard product={product} />
                     </Grid>
                 ))}

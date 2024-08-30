@@ -16,7 +16,7 @@ function Sidebar() {
         { text: 'Orders', icon: <LocalMall />, path: '/orders' },
         { text: 'Statistics', icon: <BarChart />, path: '/statistics' },
     ];
-    const drawerWidth = 240;
+    const drawerWidth = 200;
     const navigate = useNavigate();
 
     const handleDrawerToggle = () => {
