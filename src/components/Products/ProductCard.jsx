@@ -11,12 +11,16 @@ function ProductCard({ product }) {
     const navigate = useNavigate();
     
     const handleCardClick = () => {
-        navigate(`/product/${product.id}`);
+        navigate(`/products/${product.id}`);
     };
 
     const settings = {
-        dots: product.images.length > 1,
+        dots: true,
         infinite: true,
+        autoplay: true,
+        autoplaySpeed: 3000,
+        cssEase: "linear",
+        pauseOnHover: true,
         speed: 500,
         slidesToShow: 1,
         slidesToScroll: 1,
@@ -24,8 +28,8 @@ function ProductCard({ product }) {
     };
 
     return (
-        <Card sx={{ maxWidth: 250, boxShadow: 4, borderRadius: 3 }} onClick={handleCardClick}>
-            <div style={{ position: 'relative', width: '250px', height: '250px', overflow: 'hidden', backgroundColor: '#f0f0f0' }}>
+        <Card sx={{ maxWidth: 180, boxShadow: 4, borderRadius: 3 }} onClick={handleCardClick}>
+            <div style={{ position: 'relative', width: '180px', height: '180px', overflow: 'hidden', backgroundColor: '#f0f0f0' }}>
                 {product.images && product.images.length > 1 ? (
                     <Slider {...settings}>
                         {product.images.map((image, index) => (
@@ -84,10 +88,10 @@ function ProductCard({ product }) {
                     {product.name}
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                    ${product.price}
+                    {product.price} so'm
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                    Quantity: {product.quantity}
+                    Quantity: {product.quantity} ta
                 </Typography>
             </CardContent>
         </Card>

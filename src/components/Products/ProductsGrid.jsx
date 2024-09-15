@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -10,18 +10,22 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import ApiService from '../../api';
 import Pagination from '@mui/material/Pagination';
-import ProductCard from './ProductCard';
+import ProductCard from './ProductCard'; 
+import { Box, CircularProgress, Select, Typography } from '@mui/material';
 
 function ProductsGrid() {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [search, setSearch] = useState('');
-    const [category, setCategory] = useState('');
+    const [category, setCategory] = useState({});
     const [sortBy, setSortBy] = useState('id');
     const [sortOrder, setSortOrder] = useState('desc');
     const [page, setPage] = useState(1);
-    const [size, setSize] = useState(10);
+    const [size, setSize] = useState(20);
     const [totalPages, setTotalPages] = useState(1);
+
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const [open, setOpen] = useState(false);
     const [newProduct, setNewProduct] = useState({
@@ -38,7 +42,7 @@ function ProductsGrid() {
             try {
                 const params = {
                     s: search,
-                    categories: category ? [category] : [],
+                    categories: category.id ? [category.id] : [],
                     sort_by: sortBy,
                     sort_order: sortOrder,
                     page: page,
@@ -50,7 +54,12 @@ function ProductsGrid() {
                 setTotalPages(data.pages);
             } catch (error) {
                 console.error('Error fetching products:', error);
+                setError('Failed to fetch products');
             }
+             finally {
+                setLoading(false);
+            }
+            
         };
 
         const fetchCategories = async () => {
@@ -64,7 +73,7 @@ function ProductsGrid() {
 
         fetchProducts();
         fetchCategories();
-    }, [search, category, sortBy, sortOrder, page, size]);
+    }, [search, category.id, sortBy, sortOrder, page, size]);
 
     const handlePageChange = (event, value) => {
         setPage(value);
@@ -82,153 +91,193 @@ function ProductsGrid() {
         try {
             await ApiService.addProduct(newProduct);
             handleClose();
-            // Fetch the updated product list
-            setPage(1); // Reset to first page to show the new product
+            setPage(1);
         } catch (error) {
             console.error('Error adding product:', error);
         }
     };
 
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
+
     return (
-        <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <TextField
-                    label="Search"
-                    variant="outlined"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
-                <Select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    displayEmpty
-                    variant="outlined"
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Grid container spacing={1} sx={{ maxWidth: '1200px' }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        justifyContent: 'space-between',
+                        marginBottom: '20px',
+                        gap: '10px' // add gap for spacing between elements on mobile
+                    }}
                 >
-                    <MenuItem value="">All Categories</MenuItem>
-                    {categories.map(cat => (
-                        <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
-                    ))}
-                </Select>
-                <Select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    displayEmpty
-                    variant="outlined"
-                >
-                    <MenuItem value="id">ID</MenuItem>
-                    <MenuItem value="name">Name</MenuItem>
-                    <MenuItem value="price">Price</MenuItem>
-                </Select>
-                <Select
-                    value={sortOrder}
-                    onChange={(e) => setSortOrder(e.target.value)}
-                    displayEmpty
-                    variant="outlined"
-                >
-                    <MenuItem value="asc">Ascending</MenuItem>
-                    <MenuItem value="desc">Descending</MenuItem>
-                </Select>
-                <Select
-                    value={size}
-                    onChange={(e) => setSize(e.target.value)}
-                    displayEmpty
-                    variant="outlined"
-                >
-                    <MenuItem value={5}>5</MenuItem>
-                    <MenuItem value={10}>10</MenuItem>
-                    <MenuItem value={20}>20</MenuItem>
-                </Select>
-                <Button variant="contained" color="primary" onClick={handleOpen}>
-                    Add Product
-                </Button>
-            </div>
-
-            <Grid container spacing={1}>
-                {products.map(product => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
-                        <ProductCard product={product} />
-                    </Grid>
-                ))}
-            </Grid>
-
-            <Pagination
-                count={totalPages}
-                page={page}
-                onChange={handlePageChange}
-                color="primary"
-                style={{ marginTop: '20px' }}
-            />
-
-            <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>Add New Product</DialogTitle>
-                <DialogContent>
                     <TextField
-                        label="Name"
+                        label="Search"
                         variant="outlined"
-                        fullWidth
-                        margin="normal"
-                        value={newProduct.name}
-                        onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        sx={{ flex: '1 1 200px' }} // responsive width
                     />
-                    <TextField
-                        label="Quantity"
-                        variant="outlined"
-                        fullWidth
-                        margin="normal"
-                        type="number"
-                        value={newProduct.quantity}
-                        onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
-                    />
-                    <TextField
-                        label="Description"
-                        variant="outlined"
-                        fullWidth
-                        margin="normal"
-                        multiline
-                        rows={4}
-                        value={newProduct.description}
-                        onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                    />
-                    <TextField
-                        label="Price"
-                        variant="outlined"
-                        fullWidth
-                        margin="normal"
-                        type="number"
-                        value={newProduct.price}
-                        onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                    <Autocomplete
+                        options={categories}
+                        getOptionLabel={(option) => option.name}
+                        autoHighlight
+                        onChange={(event, newValue) => setCategory(newValue ? newValue : {})}
+                        renderInput={(params) => <TextField {...params} label="Category" variant="outlined" />}
+                        renderOption={(props, option) => {
+                            const { key, ...optionProps } = props;
+                            return (
+                              <Box
+                                key={key}
+                                component="li"
+                                sx={{ '& > img': { mr: 2, flexShrink: 0 } }}
+                                {...optionProps}
+                              >
+                                <img
+                                  loading="lazy"
+                                  width="20"
+                                  src={option.image_url}
+                                  alt="pic"
+                                />
+                                {option.name}
+                              </Box>
+                            );
+                          }}
+                        sx={{ flex: '1 1 200px' }} // responsive width
                     />
                     <Select
-                        value={newProduct.category_id}
-                        onChange={(e) => setNewProduct({ ...newProduct, category_id: e.target.value })}
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
                         displayEmpty
                         variant="outlined"
-                        fullWidth
-                        margin="normal"
+                        sx={{ flex: '1 1 150px' }} // responsive width
                     >
-                        <MenuItem value="">Select Category</MenuItem>
-                        {categories.map(cat => (
-                            <MenuItem key={cat.id} value={cat.id}>{cat.name}</MenuItem>
-                        ))}
+                        <MenuItem value="id">ID</MenuItem>
+                        <MenuItem value="name">Name</MenuItem>
+                        <MenuItem value="price">Price</MenuItem>
                     </Select>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={(e) => setNewProduct({ ...newProduct, images: [...e.target.files] })}
-                        style={{ marginTop: '20px' }}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose} color="secondary">
-                        Cancel
-                    </Button>
-                    <Button onClick={handleAddProduct} color="primary">
+                    <Select
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
+                        displayEmpty
+                        variant="outlined"
+                        sx={{ flex: '1 1 150px' }} // responsive width
+                    >
+                        <MenuItem value="asc">O'sish</MenuItem>
+                        <MenuItem value="desc">Kamayish</MenuItem>
+                    </Select>
+                    <Select
+                        value={size}
+                        onChange={(e) => setSize(e.target.value)}
+                        displayEmpty
+                        variant="outlined"
+                        sx={{ flex: '1 1 50px' }} // responsive width
+                    >
+                        <MenuItem value={6}>6</MenuItem>
+                        <MenuItem value={12}>12</MenuItem>
+                        <MenuItem value={18}>18</MenuItem>
+                        <MenuItem value={24}>24</MenuItem>
+                        <MenuItem value={30}>30</MenuItem>
+                        <MenuItem value={36}>36</MenuItem>
+                    </Select>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleOpen}
+                        sx={{ flex: '1 1 auto' }} // responsive width
+                    >
                         Add Product
                     </Button>
-                </DialogActions>
-            </Dialog>
-        </>
+                </div>
+                <Grid
+                    container
+                    spacing={1}
+                >
+                    {products.map(product => (
+                        <Grid item xs={6} sm={4} md={3} lg={2} key={product.id}>
+                            <ProductCard product={product} />
+                        </Grid>
+                    ))}
+                </Grid>
+                <Pagination
+                    count={totalPages}
+                    page={page}
+                    onChange={handlePageChange}
+                    color="primary"
+                    style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}
+                />
+                <Dialog open={open} onClose={handleClose}>
+                    <DialogTitle>Add New Product</DialogTitle>
+                    <DialogContent>
+                        <TextField
+                            label="Name"
+                            variant="outlined"
+                            fullWidth
+                            margin="dense"
+                            value={newProduct.name}
+                            onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                        />
+                        <TextField
+                            label="Quantity"
+                            variant="outlined"
+                            fullWidth
+                            margin="dense"
+                            type="number"
+                            value={newProduct.quantity}
+                            onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
+                        />
+                        <TextField
+                            label="Description"
+                            variant="outlined"
+                            fullWidth
+                            margin="dense"
+                            multiline
+                            rows={4}
+                            value={newProduct.description}
+                            onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                        />
+                        <TextField
+                            label="Price"
+                            variant="outlined"
+                            fullWidth
+                            margin="dense"
+                            type="number"
+                            value={newProduct.price}
+                            onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                        />
+                        <Autocomplete
+                            options={categories}
+                            getOptionLabel={(option) => option.name}
+                            value={categories.find(cat => cat.id === newProduct.category_id) || null}
+                            onChange={(event, newValue) => setNewProduct({ ...newProduct, category_id: newValue ? newValue.id : '' })}
+                            renderInput={(params) => <TextField {...params} label="Category" variant="outlined" />}
+                            style={{ marginTop: '20px' }}
+                        />
+                        <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => setNewProduct({ ...newProduct, images: [...e.target.files] })}
+                            style={{ marginTop: '20px' }}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleClose} color="secondary">
+                            Cancel
+                        </Button>
+                        <Button onClick={handleAddProduct} color="primary">
+                            Add Product
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            </Grid>
+        </Box>
     );
 }
 

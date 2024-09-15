@@ -64,7 +64,7 @@ function ProductEditForm({ productId, onSave }) {
         onChange={handleChange}
         variant="outlined"
         fullWidth
-        margin="normal"
+        margin="dense"
       />
       <TextField
         label="Price"
@@ -73,7 +73,7 @@ function ProductEditForm({ productId, onSave }) {
         onChange={handleChange}
         variant="outlined"
         fullWidth
-        margin="normal"
+        margin="dense"
       />
       <TextField
         label="Quantity"
@@ -82,7 +82,7 @@ function ProductEditForm({ productId, onSave }) {
         onChange={handleChange}
         variant="outlined"
         fullWidth
-        margin="normal"
+        margin="dense"
       />
       <TextField
         label="Description"
@@ -91,7 +91,7 @@ function ProductEditForm({ productId, onSave }) {
         onChange={handleChange}
         variant="outlined"
         fullWidth
-        margin="normal"
+        margin="dense"
       />
       <Select
         label="Category"
@@ -100,7 +100,7 @@ function ProductEditForm({ productId, onSave }) {
         onChange={handleChange}
         variant="outlined"
         fullWidth
-        margin="normal"
+        margin="dense"
       >
         {categories.map(category => (
           <MenuItem key={category.id} value={category.id}>

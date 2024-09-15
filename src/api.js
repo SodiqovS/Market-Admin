@@ -153,7 +153,7 @@ const ApiService = {
   },
 
   // Method to get a single category by ID
-  getCategoryById: async (id) => {
+  getCategory: async (id) => {
     return ApiService.handleRequest(async () => {
       const config = ApiService.attachToken({});
       const response = await axios.get(`${BASE_URL}/products/category/${id}`, config);
@@ -193,7 +193,7 @@ const ApiService = {
         params: {
           ...params,
           is_admin: params.is_admin === 'all' ? undefined : params.is_admin,
-          size: params.size || 30, // Default page size to 30
+          size: params.size || 10, // Default page size to 30
           page: params.page || 1, // Default page to 1
         },
       });
@@ -210,6 +210,43 @@ const ApiService = {
       return response.data;
     });
   },
+
+  getOrders: async (params = {}) => {
+    return ApiService.handleRequest(async () => {
+      const config = ApiService.attachToken({
+        params: {
+          page: params.page || 1,
+          size: params.size || 10,
+          ...(params.search && { search: params.search }),
+          ...(params.min_amount && { min_amount: params.min_amount }),
+          ...(params.max_amount && { max_amount: params.max_amount }),
+          ...(params.start_date && { start_date: params.start_date }),
+          ...(params.end_date && { end_date: params.end_date }),
+          ...(params.sort_by && { sort_by: params.sort_by }),
+          ...(params.sort_order && { sort_order: params.sort_order }),
+        },
+      });
+      const response = await axios.get(`${BASE_URL}/orders/all`, config);
+      return response.data;
+    });
+  },
+
+  updateOrderStatus: async (orderId, status) => {
+    return ApiService.handleRequest(async () => {
+      const config = ApiService.attachToken({
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const response = await axios.patch(
+        `${BASE_URL}/orders/${orderId}/status`,
+        { status },
+        config
+      );
+      return response.data;
+    });
+  },
+
 };
 
 export default ApiService;

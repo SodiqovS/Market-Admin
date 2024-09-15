@@ -16,7 +16,7 @@ function EditCategory() {
   useEffect(() => {
     const fetchCategory = async () => {
       try {
-        const data = await ApiService.getCategoryById(id);
+        const data = await ApiService.getCategory(id);
         setName(data.name);
         // If the image is already present, we might want to show it as a preview
       } catch (err) {

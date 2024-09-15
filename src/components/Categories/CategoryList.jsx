@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, CircularProgress, Button, Grid } from '@mui/material';
 import ApiService from '../../api';
 import { useNavigate } from 'react-router-dom';
+import CategoryCard from './CategoryCard';
 
 function CategoryList() {
   const [categories, setCategories] = useState([]);
@@ -47,18 +48,8 @@ function CategoryList() {
       <Button variant="contained" onClick={() => navigate('/categories/add')}>Add Category</Button>
       <Grid container spacing={2} sx={{ mt: 3 }}>
         {categories.map((category) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={category.id}>
-            <Box sx={{ textAlign: 'center', boxShadow: 4, borderRadius: 3, padding: 1}} mb={5}>
-              <img 
-                src={category.image_url} 
-                alt={category.name} 
-                style={{ width: '100%', height: '250px', objectFit: 'cover', borderRadius: '8px', marginBottom: '8px' }}
-              />
-              <Typography variant="h6">{category.name}</Typography>
-              <Button variant="outlined" onClick={() => navigate(`/categories/edit/${category.id}`)} sx={{ mt: 1 }}>
-                Edit
-              </Button>
-            </Box>
+          <Grid item xs={6} sm={4} md={3} lg={2} key={category.id}>
+            <CategoryCard category={category}/>
           </Grid>
         ))}
       </Grid>

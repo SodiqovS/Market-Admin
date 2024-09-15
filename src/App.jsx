@@ -10,6 +10,9 @@ import { AuthProvider } from './components/Auth/AuthContext';
 import LoginPage from './components/Auth/LoginPage';
 import ProtectedLayout from './components/Auth/ProtectedLayout';
 import CustomersPage from './components/Customers/CustomersPage';
+import CustomerDetailPage from './components/Customers/CustomerDetail';
+import OrdersPage from './components/Orders/OrdersPage';
+import CategoryDetail from './components/Categories/CategoryDetail';
 
 function App() {
     return (
@@ -42,7 +45,7 @@ function App() {
                                         }
                                     />
                                     <Route
-                                        path="/product/:id"
+                                        path="/products/:id"
                                         element={
                                             <PrivateRoute>
                                                 <ProductDetail />
@@ -73,6 +76,14 @@ function App() {
                                             </PrivateRoute>
                                         }
                                     />
+                                    <Route 
+                                        path="/categories/:id" 
+                                        element={
+                                            <PrivateRoute>
+                                                <CategoryDetail />
+                                            </PrivateRoute>
+                                            } 
+                                    />
                                     <Route
                                         path="/customers"
                                         element={
@@ -82,10 +93,18 @@ function App() {
                                         }
                                     />
                                     <Route
+                                        path="/customers/:id"
+                                        element={
+                                            <PrivateRoute>
+                                                <CustomerDetailPage />
+                                            </PrivateRoute>
+                                        }
+                                    />
+                                    <Route
                                         path="/orders"
                                         element={
                                             <PrivateRoute>
-                                                <div>Orders Page</div>
+                                                <OrdersPage />
                                             </PrivateRoute>
                                         }
                                     />

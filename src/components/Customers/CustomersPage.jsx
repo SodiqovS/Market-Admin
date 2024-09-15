@@ -1,150 +1,171 @@
-// src/components/CustomersPage.jsx
-import React, { useState, useEffect } from 'react';
-import { Table, TableHead, TableBody, TableCell, TableContainer, TableRow, Paper, TextField, Select, MenuItem, Grid, Pagination, InputLabel, FormControl } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, InputAdornment, Select, MenuItem, TablePagination, TableSortLabel } from '@mui/material';
+import { Search } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import ApiService from '../../api';
 
 const CustomersPage = () => {
   const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState('id');
-  const [sortOrder, setSortOrder] = useState('asc');
-  const [isAdmin, setIsAdmin] = useState('all');
+  const [sort, setSort] = useState('created_at');
+  const [order, setOrder] = useState('desc');
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(30);
-  const [totalPages, setTotalPages] = useState(0);
+  const [size, setSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchCustomers = async () => {
-      const params = {
-        s: search,
-        sort_by: sortBy,
-        sort_order: sortOrder,
-        is_admin: isAdmin,
-        page,
-        size: pageSize, // Use selected page size
-      };
-      const response = await ApiService.getCustomers(params);
-      setCustomers(response.items);
-      setTotalPages(response.pages);
+    fetchCustomers();
+  }, [search, sort, order, page, size]);
+
+  const fetchCustomers = async () => {
+    const params = {
+      s: search,
+      sort_by: sort,
+      sort_order: order,
+      page,
+      size,
     };
 
-    fetchCustomers();
-  }, [search, sortBy, sortOrder, isAdmin, page, pageSize]);
-
-  const handleSearchChange = (event) => {
-    setSearch(event.target.value);
+    const data = await ApiService.getCustomers(params);
+    setCustomers(data.items);
+    setTotalItems(data.total); // Assuming the API returns the total number of items
   };
 
-  const handleSortByChange = (event) => {
-    setSortBy(event.target.value);
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage + 1);
   };
 
-  const handleSortOrderChange = (event) => {
-    setSortOrder(event.target.value);
+  const handleSizeChange = (event) => {
+    setSize(parseInt(event.target.value, 10));
+    setPage(1);
   };
 
-  const handleIsAdminChange = (event) => {
-    setIsAdmin(event.target.value);
-  };
-
-  const handlePageSizeChange = (event) => {
-    setPageSize(event.target.value);
-  };
-
-  const handlePageChange = (event, value) => {
-    setPage(value);
+  const handleSort = (column) => {
+    const isAsc = sort === column && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setSort(column);
   };
 
   return (
-    <div>
-      <Grid container spacing={2} alignItems="center" justifyContent="space-between" marginBottom={2}>
-        <Grid item xs={12} sm={6} md={3}>
-          <TextField
-            label="Search"
-            value={search}
-            onChange={handleSearchChange}
-            variant="outlined"
-            fullWidth
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={2}>
-          <FormControl fullWidth>
-            <InputLabel>Sort By</InputLabel>
-            <Select value={sortBy} onChange={handleSortByChange}>
-              <MenuItem value="id">ID</MenuItem>
-              <MenuItem value="created_at">Created At</MenuItem>
-              <MenuItem value="first_name">First Name</MenuItem>
-              <MenuItem value="last_name">Last Name</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sm={6} md={2}>
-          <FormControl fullWidth>
-            <InputLabel>Sort Order</InputLabel>
-            <Select value={sortOrder} onChange={handleSortOrderChange}>
-              <MenuItem value="asc">Ascending</MenuItem>
-              <MenuItem value="desc">Descending</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sm={6} md={2}>
-          <FormControl fullWidth>
-            <InputLabel>Admin</InputLabel>
-            <Select value={isAdmin} onChange={handleIsAdminChange}>
-              <MenuItem value="all">All</MenuItem>
-              <MenuItem value="true">Admin</MenuItem>
-              <MenuItem value="false">User</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sm={6} md={2}>
-          <FormControl fullWidth>
-            <InputLabel>Page Size</InputLabel>
-            <Select value={pageSize} onChange={handlePageSizeChange}>
-              <MenuItem value={10}>10</MenuItem>
-              <MenuItem value={20}>20</MenuItem>
-              <MenuItem value={30}>30</MenuItem>
-              <MenuItem value={50}>50</MenuItem>
-              <MenuItem value={100}>100</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-      </Grid>
-
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>First Name</TableCell>
-              <TableCell>Last Name</TableCell>
-              <TableCell>Phone Number</TableCell>
-              <TableCell>Username</TableCell>
-              <TableCell>Admin</TableCell>
+    <TableContainer component={Paper}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px' }}>
+        <TextField
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search customers"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <Select
+          value={size}
+          onChange={handleSizeChange}
+          displayEmpty
+          style={{ marginLeft: '8px' }}
+        >
+          <MenuItem value={10}>10</MenuItem>
+          <MenuItem value={20}>20</MenuItem>
+          <MenuItem value={30}>30</MenuItem>
+          <MenuItem value={50}>50</MenuItem>
+        </Select>
+      </div>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Avatar</TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sort === 'first_name'}
+                direction={sort === 'first_name' ? order : 'asc'}
+                onClick={() => handleSort('first_name')}
+              >
+                First Name
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sort === 'last_name'}
+                direction={sort === 'last_name' ? order : 'asc'}
+                onClick={() => handleSort('last_name')}
+              >
+                Last Name
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sort === 'phone_number'}
+                direction={sort === 'phone_number' ? order : 'asc'}
+                onClick={() => handleSort('phone_number')}
+              >
+                Phone Number
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sort === 'username'}
+                direction={sort === 'username' ? order : 'asc'}
+                onClick={() => handleSort('username')}
+              >
+                Username
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sort === 'created_at'}
+                direction={sort === 'created_at' ? order : 'asc'}
+                onClick={() => handleSort('created_at')}
+              >
+                Created At
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                active={sort === 'is_admin'}
+                direction={sort === 'is_admin' ? order : 'asc'}
+                onClick={() => handleSort('is_admin')}
+              >
+                Is Admin
+              </TableSortLabel>
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {customers.map((customer) => (
+            <TableRow 
+              key={customer.id} 
+              hover
+              onClick={() => navigate(`/customers/${customer.id}`)}
+            >
+              <TableCell>
+                <img src={customer.image} alt="avatar" style={{ width: '30px', borderRadius: '50%' }} />
+              </TableCell>
+              <TableCell>{customer.first_name}</TableCell>
+              <TableCell>{customer.last_name}</TableCell>
+              <TableCell>{customer.phone_number}</TableCell>
+              <TableCell>{customer.username}</TableCell>
+              <TableCell>{new Date(customer.created_at).toLocaleDateString()}</TableCell>
+              <TableCell>{customer.is_admin ? 'Yes' : 'No'}</TableCell>
             </TableRow>
-          </TableHead>
-          <TableBody>
-            {customers.map((customer) => (
-              <TableRow key={customer.id}>
-                <TableCell>{customer.id}</TableCell>
-                <TableCell>{customer.first_name}</TableCell>
-                <TableCell>{customer.last_name}</TableCell>
-                <TableCell>{customer.phone_number}</TableCell>
-                <TableCell>{customer.username}</TableCell>
-                <TableCell>{customer.is_admin ? 'Yes' : 'No'}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      <Pagination
-        count={totalPages}
-        page={page}
-        onChange={handlePageChange}
-        sx={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}
-      />
-    </div>
+          ))}
+        </TableBody>
+      </Table>
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '16px' }}>
+        <TablePagination
+          component="div"
+          count={totalItems}
+          page={page - 1}
+          onPageChange={handlePageChange}
+          rowsPerPage={size}
+          onRowsPerPageChange={handleSizeChange}
+          rowsPerPageOptions={[10, 20, 30, 50]}
+        />
+      </div>
+    </TableContainer>
   );
 };
 

@@ -8,6 +8,11 @@ import { Box, CircularProgress } from '@mui/material';
 function ProtectedLayout({ children }) {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const [mobileOpen, setMobileOpen] = useState(false);
+
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen);
+    };
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -59,10 +64,10 @@ function ProtectedLayout({ children }) {
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
-            <AppBar />
+            <AppBar  onMenuClick={handleDrawerToggle} />
             <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-                <Sidebar />
-                <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3, overflow: 'auto' }}>
+                <Sidebar  mobileOpen={mobileOpen} handleDrawerToggle={handleDrawerToggle} />
+                <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 2, overflow: 'auto' }}>
                     {children}
                 </Box>
             </Box>
