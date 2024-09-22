@@ -98,60 +98,77 @@ const OrdersPage = () => {
     }
   };
 
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      // Update order status in the backend
+      await ApiService.updateOrderStatus(orderId, newStatus);
+
+      // Update the local order list with the new status
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === orderId ? { ...order, order_status: newStatus } : order
+        )
+      );
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+      // Optionally display a message to the user
+    }
+  };
+
   return (
     <Paper>
       <Typography variant="h3">Orders</Typography>
       <Box padding={2} display="flex" flexDirection="column" maxWidth="600px">
-        
+
         {/* Filter Group: Search */}
-        <Box display="flex" flexDirection="row" mb={2}  justifyContent="space-between">
-          <TextField 
-            label="Search" 
-            value={search} 
-            onChange={(e) => setSearch(e.target.value)} 
+        <Box display="flex" flexDirection="row" mb={2} justifyContent="space-between">
+          <TextField
+            label="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             size="small"
             sx={{ mb: 2 }}
           />
         </Box>
 
         {/* Filter Group: Amounts */}
-        <Box display="flex" flexDirection="row" mb={2}  justifyContent="space-between">
+        <Box display="flex" flexDirection="row" mb={2} justifyContent="space-between">
           <Typography variant="subtitle1">Amount</Typography>
-          <TextField 
-            label="Min Amount" 
-            type="number" 
-            value={minAmount} 
-            onChange={(e) => setMinAmount(e.target.value)} 
+          <TextField
+            label="Min Amount"
+            type="number"
+            value={minAmount}
+            onChange={(e) => setMinAmount(e.target.value)}
             size="small"
             sx={{ mb: 2 }}
           />
-          <TextField 
-            label="Max Amount" 
-            type="number" 
-            value={maxAmount} 
-            onChange={(e) => setMaxAmount(e.target.value)} 
+          <TextField
+            label="Max Amount"
+            type="number"
+            value={maxAmount}
+            onChange={(e) => setMaxAmount(e.target.value)}
             size="small"
             sx={{ mb: 2 }}
           />
         </Box>
 
         {/* Filter Group: Dates */}
-        <Box display="flex" flexDirection="row" mb={2}  justifyContent="space-between">
+        <Box display="flex" flexDirection="row" mb={2} justifyContent="space-between">
           <Typography variant="subtitle1">Date</Typography>
-          <TextField 
-            label="Start Date" 
-            type="date" 
-            value={startDate} 
-            onChange={(e) => setStartDate(e.target.value)} 
+          <TextField
+            label="Start Date"
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
             InputLabelProps={{ shrink: true }}
             size="small"
             sx={{ mb: 2 }}
           />
-          <TextField 
-            label="End Date" 
-            type="date" 
-            value={endDate} 
-            onChange={(e) => setEndDate(e.target.value)} 
+          <TextField
+            label="End Date"
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
             InputLabelProps={{ shrink: true }}
             size="small"
             sx={{ mb: 2 }}
@@ -159,7 +176,7 @@ const OrdersPage = () => {
         </Box>
 
         {/* Filter Group: Sorting */}
-        <Box display="flex" flexDirection="row" mb={2}  justifyContent="space-between">
+        <Box display="flex" flexDirection="row" mb={2} justifyContent="space-between">
           <Typography variant="subtitle1">Sorting</Typography>
           <TextField
             select
@@ -199,6 +216,7 @@ const OrdersPage = () => {
               <TableCell />
               <TableCell>ID</TableCell>
               <TableCell>Customer</TableCell>
+              <TableCell>Phone</TableCell>
               <TableCell>Date</TableCell>
               <TableCell>Address</TableCell>
               <TableCell>Amount</TableCell>
@@ -221,32 +239,70 @@ const OrdersPage = () => {
                   <TableCell>{order.id}</TableCell>
                   <TableCell>
                     <Link to={`/customers/${order.user_info.id}`}>
-                      {`${order.user_info.first_name} ${order.user_info.last_name}`}
+                      {`${order.user_info.first_name} ${order.user_info.last_name || ''}`}
                     </Link>
+                  </TableCell>
+                  <TableCell>
+                    <a href={`tel:${order.user_info.phone_number}`}>{order.user_info.phone_number}</a>
                   </TableCell>
                   <TableCell>{new Date(order.order_date).toLocaleString()}</TableCell>
                   <TableCell>{order.shipping_address}</TableCell>
                   <TableCell>${order.order_amount}</TableCell>
                   <TableCell>
-                    <span style={statusStyles[order.order_status]}>
-                      {order.order_status}
-                    </span>
+                    <TextField
+                      select
+                      value={order.order_status}
+                      onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        minWidth: 150,
+                        '& .MuiSelect-select': {
+                          backgroundColor: statusStyles[order.order_status].backgroundColor,
+                          color: statusStyles[order.order_status].color,
+                          borderRadius: '12px',
+                          padding: '4px 8px',
+                        }
+                      }}
+                    >
+                      {Object.keys(statusStyles).map((status) => (
+                        <MenuItem key={status} value={status} sx={statusStyles[status]}>
+                          {status}
+                        </MenuItem>
+                      ))}
+                    </TextField>
                   </TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+                  <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
                     <Collapse in={openOrderIds[order.id]} timeout="auto" unmountOnExit>
                       <Box margin={1}>
-                        <Typography variant="h6">Order Details</Typography>
-                        {order.order_details.map((detail) => (
-                          <Typography key={detail.id}>
-                            Product:
-                            <Link to={`/products/${detail.product.id}`}>
-                              {detail.product.name}
-                            </Link>
-                            - {detail.quantity} pcs
-                          </Typography>
-                        ))}
+                        <Table size="small" aria-label="order-details">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Product</TableCell>
+                              <TableCell align="right">Quantity</TableCell>
+                              <TableCell align="right">Price</TableCell>
+                              <TableCell align="right">Total</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {order.order_details.map((item) => (
+                              <TableRow key={item.id}>
+                                <TableCell>
+                                  <Link to={`/products/${item.product.id}`}>
+                                    {item.product.name}
+                                  </Link>
+                                </TableCell>
+                                <TableCell align="right">{item.quantity}</TableCell>
+                                <TableCell align="right">${item.product.price}</TableCell>
+                                <TableCell align="right">
+                                  ${item.quantity * item.product.price}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
                       </Box>
                     </Collapse>
                   </TableCell>

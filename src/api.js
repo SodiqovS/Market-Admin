@@ -2,6 +2,7 @@
 import axios from 'axios';
 
 const BASE_URL = 'https://api.sodiqdev.cloud';
+// const BASE_URL = 'http://127.0.0.1:8000';
 
 const ApiService = {
   // Helper function to get the access token from local storage
@@ -217,6 +218,7 @@ const ApiService = {
         params: {
           page: params.page || 1,
           size: params.size || 10,
+          ...(params.status && { status: params.status }), // Add status filter
           ...(params.search && { search: params.search }),
           ...(params.min_amount && { min_amount: params.min_amount }),
           ...(params.max_amount && { max_amount: params.max_amount }),
@@ -230,8 +232,8 @@ const ApiService = {
       return response.data;
     });
   },
-
-  updateOrderStatus: async (orderId, status) => {
+  
+  updateOrderStatus: async (orderId, order_status) => {
     return ApiService.handleRequest(async () => {
       const config = ApiService.attachToken({
         headers: {
@@ -239,8 +241,8 @@ const ApiService = {
         },
       });
       const response = await axios.patch(
-        `${BASE_URL}/orders/${orderId}/status`,
-        { status },
+        `${BASE_URL}/orders/${orderId}`,
+        { order_status },
         config
       );
       return response.data;

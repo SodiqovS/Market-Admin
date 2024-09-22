@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { AppBar as MUIAppBar, Toolbar, IconButton, Typography, Menu, MenuItem, Avatar, Box } from '@mui/material';
 import { Menu as MenuIcon, AccountCircle } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ApiService from '../api';
+import { useAuth } from './Auth/AuthContext';
 
 function AppBar({ onMenuClick }) {
     const [anchorEl, setAnchorEl] = useState(null);
     const [profile, setProfile] = useState(null);
+    const { logout } = useAuth();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -64,8 +67,8 @@ function AppBar({ onMenuClick }) {
                         onClose={handleClose}
                     >
                         <MenuItem disabled>{profile?.first_name} {profile?.last_name}</MenuItem>
-                        <MenuItem onClick={handleClose}>Profile</MenuItem>
-                        <MenuItem onClick={handleClose}>Logout</MenuItem>
+                        <MenuItem onClick={() => navigate(`/customers/${profile.id}`)}>Profile</MenuItem>
+                        <MenuItem onClick={logout}>Logout</MenuItem>
                     </Menu>
                 </Box>
             </Toolbar>

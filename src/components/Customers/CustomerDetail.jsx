@@ -4,7 +4,9 @@ import ApiService from '../../api';
 import {
   Paper, Typography, Avatar, List, ListItem, ListItemText,
   Box, CircularProgress, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Collapse, IconButton
+  TableContainer, TableHead, TableRow, Collapse, IconButton,
+  TextField,
+  MenuItem
 } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 
@@ -38,6 +40,23 @@ const CustomerDetailPage = () => {
       ...prevOpenOrderIds,
       [orderId]: !prevOpenOrderIds[orderId],
     }));
+  };
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      // Update order status in the backend
+      await ApiService.updateOrderStatus(orderId, newStatus);
+
+      // Update the local order list with the new status
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === orderId ? { ...order, order_status: newStatus } : order
+        )
+      );
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+      // Optionally display a message to the user
+    }
   };
 
   if (!customer) {
@@ -111,9 +130,28 @@ const CustomerDetailPage = () => {
                   <TableCell>${order.order_amount}</TableCell>
                   <TableCell>{order.shipping_address}</TableCell>
                   <TableCell>
-                    <span style={statusStyles[order.order_status]}>
-                      {order.order_status}
-                    </span>
+                    <TextField
+                      select
+                      value={order.order_status}
+                      onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        minWidth: 150,
+                        '& .MuiSelect-select': {
+                          backgroundColor: statusStyles[order.order_status].backgroundColor,
+                          color: statusStyles[order.order_status].color,
+                          borderRadius: '12px',
+                          padding: '4px 8px',
+                        }
+                      }}
+                    >
+                      {Object.keys(statusStyles).map((status) => (
+                        <MenuItem key={status} value={status} sx={statusStyles[status]}>
+                          {status}
+                        </MenuItem>
+                      ))}
+                    </TextField>
                   </TableCell>
                 </TableRow>
                 <TableRow>
